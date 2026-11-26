@@ -1,0 +1,338 @@
+
+<!-- Navbar -->
+<div class="navbar">
+  <h2>THOMAS COOK</h2>
+  <nav>
+    <a href="#">Home</a>
+    <a href="#hotels">Hotels</a>
+    <a href="#about">About</a>
+  </nav>
+</div>
+
+<!-- Hero Section -->
+<section class="hero">
+  <h1>Find Your Perfect Stay</h1>
+  <p>Discover amazing hotels and enjoy a comfortable journey.</p>
+  <a href="#hotels" class="search-btn">Explore Hotels</a>
+</section>
+
+<!-- Hotels Section -->
+<section id="hotels" class="hotels-section">
+
+  <h2>Popular Hotels</h2>
+  <p class="subtitle">Explore our handpicked hotels across India</p>
+
+  <!-- Search Section -->
+  <div class="search-container">
+
+    <input
+      type="text"
+      #locationInput
+      placeholder="Enter city (e.g. Mumbai, Goa)"
+    />
+
+    <input
+      type="date"
+      #checkInInput
+      [min]="checkIn"
+      (change)="checkIn = checkInInput.value"
+      aria-label="Check-in date"
+    />
+
+    <input
+      type="date"
+      #checkOutInput
+      [min]="checkIn || undefined"
+      (change)="checkOut = checkOutInput.value"
+      aria-label="Check-out date"
+    />
+
+    <button
+      type="button"
+      (click)="searchHotels(locationInput.value)">
+      Search Hotels
+    </button>
+
+    <button type="button" (click)="loadHotels()">
+      Show All
+    </button>
+
+  </div>
+
+  <p *ngIf="errorMessage" class="error-message">
+    {{ errorMessage }}
+  </p>
+
+  <!-- Hotel Cards -->
+  <div class="hotel-grid">
+
+    <div class="hotel-card" *ngFor="let hotel of hotels">
+
+      <div class="hotel-image">🏨</div>
+
+      <div class="hotel-info">
+
+        <h3>{{ hotel.name }}</h3>
+
+        <p>📍 {{ hotel.location }}</p>
+
+        <p>{{ hotel.description }}</p>
+
+        <p>
+          <strong>Amenities:</strong>
+          {{ hotel.amenities }}
+        </p>
+
+        <button
+          type="button"
+          (click)="viewDetails(hotel)">
+          View Details
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <p *ngIf="hotels.length === 0 && !errorMessage">
+    Loading hotels...
+  </p>
+
+  <!-- Hotel Room Details -->
+  <section class="room-details" *ngIf="selectedHotel">
+
+    <h2>{{ selectedHotel.name }}</h2>
+
+    <p>📍 {{ selectedHotel.location }}</p>
+
+    <h3>Available Room Types</h3>
+
+    <p *ngIf="roomError" class="error-message">
+      {{ roomError }}
+    </p>
+
+    <div class="room-grid">
+
+      <div class="room-card" *ngFor="let room of rooms">
+
+        <h3>{{ room.roomType }}</h3>
+
+        <h2>₹{{ room.price }}</h2>
+
+        <p>Per night</p>
+
+        <p>Room Capacity: {{ room.capacity }}</p>
+
+        <button
+          type="button"
+          (click)="selectRoom(room)">
+          Select Room
+        </button>
+
+      </div>
+
+    </div>
+
+    <p *ngIf="rooms.length === 0 && !roomError">
+      No rooms found.
+    </p>
+
+    <!-- Booking Form -->
+    <div class="booking-form" *ngIf="selectedRoom">
+
+      <h2>Complete Your Booking</h2>
+
+      <p>
+        Selected Room: <strong>{{ selectedRoom.roomType }}</strong>
+      </p>
+
+      <p>
+        Price per night: ₹{{ selectedRoom.price }}
+      </p>
+
+      <div class="booking-inputs">
+
+        <label>Customer Name</label>
+        <input
+          type="text"
+          [(ngModel)]="customerName"
+          placeholder="Enter your full name"
+        />
+
+        <label>Email Address</label>
+        <input
+          type="email"
+          [(ngModel)]="customerEmail"
+          placeholder="Enter your email"
+        />
+
+        <label>Check-in Date</label>
+        <input
+          type="date"
+          [(ngModel)]="checkIn"
+          [min]="checkIn"
+        />
+
+        <label>Check-out Date</label>
+        <input
+          type="date"
+          [(ngModel)]="checkOut"
+          [min]="checkIn || undefined"
+        />
+
+      </div>
+
+      <!-- Price Calculation -->
+      <div class="price-summary">
+
+        <p>
+          Total Nights: {{ totalNights }}
+        </p>
+
+        <h3>
+          Total Amount: ₹{{ totalAmount }}
+        </h3>
+
+      </div>
+
+      <p *ngIf="bookingError" class="error-message">
+        {{ bookingError }}
+      </p>
+
+      <p *ngIf="bookingMessage" class="success-message">
+        {{ bookingMessage }}
+      </p>
+
+      <button
+        type="button"
+        (click)="createBooking()"
+        [disabled]="isBooking">
+
+        {{ isBooking ? 'Processing...' : 'Confirm Booking' }}
+
+      </button>
+
+    </div>
+
+    <button
+      type="button"
+      (click)="closeDetails()">
+      Close Details
+    </button>
+
+  </section>
+
+</section>
+
+<!-- My Booking Section -->
+<section id="my-booking" class="my-booking">
+
+  <h2>My Booking</h2>
+
+  <p>View or manage your hotel reservation.</p>
+
+  <div class="booking-lookup">
+
+    <label>Booking Reference</label>
+
+    <input
+      type="text"
+      [(ngModel)]="searchReference"
+      placeholder="Enter booking reference"
+    />
+
+    <label>Email Address</label>
+
+    <input
+      type="email"
+      [(ngModel)]="searchEmail"
+      placeholder="Enter your booking email"
+    />
+
+    <button
+      type="button"
+      (click)="lookupBooking()"
+      [disabled]="isSearching">
+
+      {{ isSearching ? 'Searching...' : 'Find Booking' }}
+
+    </button>
+
+  </div>
+
+  <!-- Lookup Error -->
+  <p *ngIf="lookupError" class="error-message">
+    {{ lookupError }}
+  </p>
+
+  <!-- Lookup Success -->
+  <p *ngIf="lookupMessage" class="success-message">
+    {{ lookupMessage }}
+  </p>
+
+  <!-- Booking Information -->
+  <div class="booking-result" *ngIf="foundBooking">
+
+    <h3>Booking Details</h3>
+
+    <p>
+      <strong>Reference:</strong>
+      {{ foundBooking.bookingReference }}
+    </p>
+
+    <p>
+      <strong>Customer:</strong>
+      {{ foundBooking.customerName }}
+    </p>
+
+    <p>
+      <strong>Email:</strong>
+      {{ foundBooking.email }}
+    </p>
+
+    <p>
+      <strong>Room:</strong>
+      {{ foundBooking.room.roomType }}
+    </p>
+
+    <p>
+      <strong>Check-in:</strong>
+      {{ foundBooking.checkIn }}
+    </p>
+
+    <p>
+      <strong>Check-out:</strong>
+      {{ foundBooking.checkOut }}
+    </p>
+
+    <p>
+      <strong>Total Amount:</strong>
+      ₹{{ foundBooking.totalAmount }}
+    </p>
+
+    <p>
+      <strong>Status:</strong>
+      {{ foundBooking.status }}
+    </p>
+
+    <button
+      type="button"
+      *ngIf="foundBooking.status === 'CONFIRMED'"
+      (click)="cancelBooking()"
+      [disabled]="isCancelling">
+
+      {{ isCancelling ? 'Cancelling...' : 'Cancel Booking' }}
+
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- Footer -->
+<footer id="about">
+  <h3>THOMAS COOK</h3>
+  <p>Your journey begins with a perfect stay.</p>
+</footer>
